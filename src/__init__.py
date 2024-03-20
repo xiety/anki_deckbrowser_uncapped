@@ -52,16 +52,27 @@ def _render_deck_node_mod(self, node: DeckTreeNode, ctx: RenderDeckNodeContext) 
     )
 
     # due counts
-    def nonzeroColour(cnt: int, klass: str) -> str:
-        if not cnt:
-            klass = "zero-count"
-        return f'<span class="{klass}">{cnt}</span>'
+    def nonzeroColour(cnt: int, uncapped: int, klass: str) -> str:
+        is_parent = not node.collapsed and len(node.children) != 0
 
-    review = nonzeroColour(node.review_count, "review-count")
-    learn = nonzeroColour(node.learn_count, "learn-count")
+        if is_parent or not cnt:
+            klass = 'zero-count' 
+
+        text = f'<span class="{klass}">{cnt}</span>'
+
+        remain = max(0, uncapped - cnt)
+
+        if remain:
+            text += f' <span class="zero-count">({remain})</span>'
+
+        return text
+
+    dnew = nonzeroColour(node.new_count, node.new_uncapped, "new-count")
+    review = nonzeroColour(node.review_count, node.review_uncapped, "review-count")
+    learn = nonzeroColour(node.learn_count, 0, "learn-count")
 
     buf += ("<td align=end>%s</td>" * 3) % (
-        nonzeroColour(node.new_count, "new-count"),
+        dnew,
         learn,
         review,
     )
